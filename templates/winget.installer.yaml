@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
 
 PackageIdentifier: GarrettStimpson.Torflix
 PackageVersion: "0.3.0"
@@ -20,4 +20,4 @@ Installers:
   InstallerUrl: https://github.com/gary23w/torflix/releases/download/v0.3.0/Torflix-Setup-0.3.0-arm64.exe
   InstallerSha256: CA0D2FD2CC9C03C53659B1F15D7AC2FD3AE51B8A7CC88DFA46F55310545307BE
 ManifestType: installer
-ManifestVersion: 1.12.0
+ManifestVersion: 1.10.0

@@ -87,6 +87,7 @@ test('winget manifests agree on the new version and use the actual publication d
   for (const [name, text] of Object.entries(files)) {
     assert.ok(name.includes('/0.4.0/'));
     assert.ok(text.includes('PackageVersion: "0.4.0"'));
+    assert.ok(text.includes('ManifestVersion: 1.10.0'));
     assert.ok(!text.includes('0.3.0'));
   }
   const installer = Object.entries(files).find(([name]) => name.endsWith('.installer.yaml'))[1];
