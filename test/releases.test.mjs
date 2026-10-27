@@ -59,6 +59,11 @@ test('manual channels stay disabled even if a publishing key is configured', () 
   assert.ok(!result.include.some(i => i.channel === 'chocolatey'));
   assert.ok(result.status.includes('chocolatey: handled manually by request'));
 });
+test('an external account block prevents publication even with valid credentials', () => {
+  const result = makePlan([release()], state, enabled, [], { aur: 'Registration closed' });
+  assert.ok(!result.include.some(i => i.channel === 'aur'));
+  assert.ok(result.status.includes('aur: Registration closed'));
+});
 test('newer versions are selected semantically rather than by list order', () => {
   const result = makePlan([release('0.9.0'), release('0.10.0')], state, enabled);
   assert.ok(result.include.every(i => i.tag === 'v0.10.0'));

@@ -38,7 +38,7 @@ async function plan() {
     channel === 'chocolatey' ? process.env.CHOCOLATEY_CONFIGURED === 'true'
       : channel === 'aur' ? process.env.AUR_CONFIGURED === 'true'
         : process.env.GITHUB_PUBLISH_CONFIGURED === 'true']));
-  const result = makePlan(releases, localState, enabled, config.manualChannels);
+  const result = makePlan(releases, localState, enabled, config.manualChannels, config.blockedChannels);
   await fs.writeFile(path.join(root, 'plan.json'), JSON.stringify(result, null, 2) + '\n');
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT,
     `matrix=${JSON.stringify({ include: result.include })}\nhas_updates=${result.include.length > 0}\n`);
@@ -139,20 +139,29 @@ function publishChocolatey(directory, version) {
 }
 
 async function publishAur(directory, version) {
-  if (!process.env.AUR_SSH_KEY || !process.env.AUR_KNOWN_HOSTS) throw new Error('AUR_SSH_KEY and pinned AUR_KNOWN_HOSTS are required');
+  if (!process.env.AUR_SSH_KEY) throw new Error('AUR_SSH_KEY is required');
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'torflix-aur-'));
   const key = path.join(temporary, 'identity'), known = path.join(temporary, 'known_hosts');
   try {
     await fs.writeFile(key, process.env.AUR_SSH_KEY + '\n', { mode: 0o600 });
-    await fs.writeFile(known, process.env.AUR_KNOWN_HOSTS + '\n', { mode: 0o600 });
+    const hostKey = process.env.AUR_KNOWN_HOSTS || execFileSync('ssh-keyscan', ['-T', '10', '-t', 'ed25519', 'aur.archlinux.org'], {
+      encoding: 'utf8', timeout: 15000, stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    await fs.writeFile(known, hostKey + '\n', { mode: 0o600 });
+    const fingerprint = execFileSync('ssh-keygen', ['-lf', known, '-E', 'sha256'], { encoding: 'utf8' }).trim().split(/\s+/)[1];
+    // Verified against the fingerprints published at https://aur.archlinux.org/ on 2026-10-27.
+    if (fingerprint !== 'SHA256:RFzBCUItH9LZS0cKB5UE6ceAYhBD5C8GeOBip8Z11+4') throw new Error('AUR host key does not match the pinned official fingerprint');
     // AUR publication runs on Linux. Quote the generated paths, never release-supplied data.
     const quote = value => "'" + value.replaceAll("'", "'\\''") + "'";
     const env = { ...process.env, GIT_SSH_COMMAND: `ssh -i ${quote(key)} -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=${quote(known)}` };
     const checkout = path.join(temporary, 'checkout');
     const git = args => execFileSync('git', args, { cwd: checkout, env, encoding: 'utf8' });
     execFileSync('git', ['clone', 'ssh://aur@aur.archlinux.org/torflix-bin.git', checkout], { env, stdio: 'inherit' });
-    const current = await fs.readFile(path.join(checkout, 'PKGBUILD'), 'utf8');
-    assertNoDowngrade(current, 'aur', version);
+    const current = await fs.readFile(path.join(checkout, 'PKGBUILD'), 'utf8').catch(error => {
+      if (error.code === 'ENOENT') return null;
+      throw error;
+    });
+    if (current) assertNoDowngrade(current, 'aur', version);
     for (const name of ['PKGBUILD', '.SRCINFO']) await fs.copyFile(path.join(directory, name), path.join(checkout, name));
     git(['config', 'user.name', 'Garrett Stimpson']);
     git(['config', 'user.email', '61893883+gary23w@users.noreply.github.com']);
@@ -173,6 +182,7 @@ async function publish() {
   const channel = option('channel'), tag = option('tag');
   if (!channels.includes(channel) || !versionOf(tag)) throw new Error('Provide a known --channel and stable --tag');
   if (config.manualChannels.includes(channel)) throw new Error(`${channel} is handled manually by request`);
+  if (config.blockedChannels[channel]) throw new Error(config.blockedChannels[channel]);
   const stateApi = new GitHub(process.env.GITHUB_STATE_TOKEN);
   const snapshot = await stateApi.file(stateRepo, 'state.json', 'main');
   const state = JSON.parse(snapshot.text), version = versionOf(tag);

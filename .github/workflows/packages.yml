@@ -36,7 +36,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GITHUB_PUBLISH_CONFIGURED: ${{ secrets.GH_PUBLISH_TOKEN != '' }}
           CHOCOLATEY_CONFIGURED: ${{ secrets.CHOCOLATEY_API_KEY != '' }}
-          AUR_CONFIGURED: ${{ secrets.AUR_SSH_KEY != '' && secrets.AUR_KNOWN_HOSTS != '' }}
+          AUR_CONFIGURED: ${{ secrets.AUR_SSH_KEY != '' }}
         run: node update.mjs plan
 
   publish:

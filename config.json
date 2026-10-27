@@ -1,3 +1,6 @@
 {
-  "manualChannels": ["chocolatey"]
+  "manualChannels": ["chocolatey"],
+  "blockedChannels": {
+    "aur": "AUR account registration is temporarily closed; publisher account setup is pending (verified 2026-10-27)."
+  }
 }
