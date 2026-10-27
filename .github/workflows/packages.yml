@@ -1,0 +1,79 @@
+name: Update package managers
+
+on:
+  schedule:
+    - cron: '3-58/5 * * * *'
+  workflow_dispatch:
+  repository_dispatch:
+    types: [torflix-release]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: package-manager-updates
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      has_updates: ${{ steps.plan.outputs.has_updates }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+      - name: Find complete, newer desktop releases
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_PUBLISH_CONFIGURED: ${{ secrets.GH_PUBLISH_TOKEN != '' }}
+          CHOCOLATEY_CONFIGURED: ${{ secrets.CHOCOLATEY_API_KEY != '' }}
+          AUR_CONFIGURED: ${{ secrets.AUR_SSH_KEY != '' && secrets.AUR_KNOWN_HOSTS != '' }}
+        run: node update.mjs plan
+
+  publish:
+    needs: plan
+    if: needs.plan.outputs.has_updates == 'true'
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+      - run: npm test
+      - name: Publish ${{ matrix.channel }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_STATE_TOKEN: ${{ github.token }}
+          GH_PUBLISH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+          AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
+          AUR_KNOWN_HOSTS: ${{ secrets.AUR_KNOWN_HOSTS }}
+          UPDATE_CHANNEL: ${{ matrix.channel }}
+          UPDATE_TAG: ${{ matrix.tag }}
+        shell: bash
+        run: node update.mjs publish --channel="$UPDATE_CHANNEL" --tag="$UPDATE_TAG"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        with:
+          name: ${{ matrix.channel }}-${{ matrix.tag }}
+          path: artifacts/
+          if-no-files-found: ignore
+

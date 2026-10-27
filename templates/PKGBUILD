@@ -1,0 +1,30 @@
+# Maintainer: Garrett Stimpson <info@garrettstimpson.ca>
+pkgname=torflix-bin
+_pkgname=torflix
+pkgver=0.3.0
+pkgrel=1
+pkgdesc='Stream torrent videos while they download'
+arch=('x86_64' 'aarch64')
+url='https://github.com/gary23w/torflix'
+license=('MIT OR Apache-2.0')
+depends=('alsa-lib' 'at-spi2-core' 'gtk3' 'libnotify' 'libsecret' 'libxss' 'libxtst' 'mesa' 'nss' 'util-linux-libs' 'xdg-utils')
+optdepends=('ffmpeg: Dolby and DTS sound in desktop playback')
+provides=("$_pkgname")
+conflicts=("$_pkgname")
+options=('!strip' '!debug')
+source=("LICENSE-MIT-$pkgver::https://raw.githubusercontent.com/gary23w/torflix/v$pkgver/LICENSE-MIT"
+        "LICENSE-APACHE-$pkgver::https://raw.githubusercontent.com/gary23w/torflix/v$pkgver/LICENSE-APACHE")
+sha256sums=('d6bb2fdbddb3aab00c963592d171ef7a19045cfe2575df36ae33e37c59bdb550'
+            'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30')
+source_x86_64=("$url/releases/download/v$pkgver/Torflix-$pkgver-linux-amd64.deb")
+sha256sums_x86_64=('a25727d93dc155e010e69f771023e2fe366e6c966c0b2d0be8736b36f861ebbc')
+source_aarch64=("$url/releases/download/v$pkgver/Torflix-$pkgver-linux-arm64.deb")
+sha256sums_aarch64=('ad3506f022e217c44cf02c4b84b708418319df46b4ff81a00163451b4604e307')
+
+package() {
+  bsdtar -xf data.tar.xz -C "$pkgdir" --exclude ./usr/share/doc
+  install -d "$pkgdir/usr/bin"
+  ln -s /opt/Torflix/torflix "$pkgdir/usr/bin/torflix"
+  install -Dm644 "LICENSE-MIT-$pkgver" "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
+  install -Dm644 "LICENSE-APACHE-$pkgver" "$pkgdir/usr/share/licenses/$pkgname/LICENSE-APACHE"
+}

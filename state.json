@@ -1,0 +1,9 @@
+{
+  "_heartbeat": "2026-10",
+  "homebrew": { "version": "0.3.0" },
+  "scoop": { "version": "0.3.0" },
+  "winget": { "version": "0.3.0", "url": "https://github.com/microsoft/winget-pkgs/pull/462443" },
+  "pacstall": { "version": "0.3.0", "url": "https://github.com/pacstall/pacstall-programs/pull/9534" },
+  "chocolatey": { "version": "0.3.0" },
+  "aur": { "version": "0.3.0" }
+}
