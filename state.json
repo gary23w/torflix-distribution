@@ -1,9 +1,26 @@
 {
   "_heartbeat": "2026-10",
-  "homebrew": { "version": "0.3.0" },
-  "scoop": { "version": "0.3.0" },
-  "winget": { "version": "0.3.0", "url": "https://github.com/microsoft/winget-pkgs/pull/462443" },
-  "pacstall": { "version": "0.3.0", "url": "https://github.com/pacstall/pacstall-programs/pull/9534" },
-  "chocolatey": { "version": "0.3.0" },
-  "aur": { "version": "0.3.0" }
+  "homebrew": {
+    "version": "0.3.1",
+    "release": 425492274,
+    "updated": "2026-10-27T13:39:40.084Z",
+    "url": "https://github.com/gary23w/homebrew-torflix/blob/main/Casks/torflix.rb"
+  },
+  "scoop": {
+    "version": "0.3.0"
+  },
+  "winget": {
+    "version": "0.3.0",
+    "url": "https://github.com/microsoft/winget-pkgs/pull/462443"
+  },
+  "pacstall": {
+    "version": "0.3.0",
+    "url": "https://github.com/pacstall/pacstall-programs/pull/9534"
+  },
+  "chocolatey": {
+    "version": "0.3.0"
+  },
+  "aur": {
+    "version": "0.3.0"
+  }
 }
