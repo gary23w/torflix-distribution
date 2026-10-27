@@ -54,6 +54,11 @@ test('already submitted versions, older releases, and disabled credentials are s
   assert.equal(makePlan([release('0.3.0'), release('0.2.0')], state, enabled).include.length, 0);
   assert.equal(makePlan([release()], state, {}).include.length, 0);
 });
+test('manual channels stay disabled even if a publishing key is configured', () => {
+  const result = makePlan([release()], state, enabled, ['chocolatey']);
+  assert.ok(!result.include.some(i => i.channel === 'chocolatey'));
+  assert.ok(result.status.includes('chocolatey: handled manually by request'));
+});
 test('newer versions are selected semantically rather than by list order', () => {
   const result = makePlan([release('0.9.0'), release('0.10.0')], state, enabled);
   assert.ok(result.include.every(i => i.tag === 'v0.10.0'));

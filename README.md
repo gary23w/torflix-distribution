@@ -17,7 +17,7 @@ prereleases and nonstandard version tags are ignored. Channels never intentional
 | Scoop | Commit updated manifest to `gary23w/scoop-torflix` | `GH_PUBLISH_TOKEN` |
 | winget | Validate manifests and open a version PR | `GH_PUBLISH_TOKEN` |
 | Pacstall | Update pending inclusion PR, or open a version PR | `GH_PUBLISH_TOKEN` |
-| Chocolatey | Pack and push to community moderation | `CHOCOLATEY_API_KEY` |
+| Chocolatey | Manual publishing, at Gary's request | None required by the automation |
 | AUR | Push PKGBUILD and .SRCINFO to existing `torflix-bin` package | `AUR_SSH_KEY`, `AUR_KNOWN_HOSTS` |
 
 The GitHub publishing token must be a user token allowed to write the four public channel
@@ -26,6 +26,10 @@ with `public_repo` is sufficient. Keep it in GitHub Actions secrets. An existing
 GitHub CLI token can also work; a dedicated token is preferable for independent revocation.
 The workflow's ordinary GITHUB_TOKEN only reads public releases and records its own state,
 including a monthly activity commit to keep scheduled checks enabled.
+
+`config.json` explicitly keeps Chocolatey out of automatic publishing, even if a key is
+later added. Preview still renders its package for manual submission. Re-enabling automatic
+Chocolatey publishing would require a configuration change and CHOCOLATEY_API_KEY.
 
 Missing publishing credentials disable only the affected channels and are shown in the
 workflow summary. AUR must already exist under an account with the SSH public key registered.

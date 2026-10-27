@@ -13,6 +13,7 @@ const option = name => args.find(arg => arg.startsWith(`--${name}=`))?.slice(nam
 const readApi = new GitHub(process.env.GH_TOKEN);
 const stateRepo = process.env.GITHUB_REPOSITORY || 'gary23w/torflix-distribution';
 const localState = JSON.parse(await fs.readFile(path.join(root, 'state.json'), 'utf8'));
+const config = JSON.parse(await fs.readFile(path.join(root, 'config.json'), 'utf8'));
 
 async function summary(text) {
   console.log(text);
@@ -37,7 +38,7 @@ async function plan() {
     channel === 'chocolatey' ? process.env.CHOCOLATEY_CONFIGURED === 'true'
       : channel === 'aur' ? process.env.AUR_CONFIGURED === 'true'
         : process.env.GITHUB_PUBLISH_CONFIGURED === 'true']));
-  const result = makePlan(releases, localState, enabled);
+  const result = makePlan(releases, localState, enabled, config.manualChannels);
   await fs.writeFile(path.join(root, 'plan.json'), JSON.stringify(result, null, 2) + '\n');
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT,
     `matrix=${JSON.stringify({ include: result.include })}\nhas_updates=${result.include.length > 0}\n`);
@@ -171,6 +172,7 @@ async function publishAur(directory, version) {
 async function publish() {
   const channel = option('channel'), tag = option('tag');
   if (!channels.includes(channel) || !versionOf(tag)) throw new Error('Provide a known --channel and stable --tag');
+  if (config.manualChannels.includes(channel)) throw new Error(`${channel} is handled manually by request`);
   const stateApi = new GitHub(process.env.GITHUB_STATE_TOKEN);
   const snapshot = await stateApi.file(stateRepo, 'state.json', 'main');
   const state = JSON.parse(snapshot.text), version = versionOf(tag);
