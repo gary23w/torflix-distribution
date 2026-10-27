@@ -13,8 +13,10 @@
     "url": "https://github.com/gary23w/scoop-torflix/blob/main/bucket/torflix.json"
   },
   "winget": {
-    "version": "0.3.0",
-    "url": "https://github.com/microsoft/winget-pkgs/pull/462443"
+    "version": "0.3.1",
+    "release": 425492274,
+    "updated": "2026-10-27T13:40:31.143Z",
+    "url": "https://github.com/microsoft/winget-pkgs/pull/462899"
   },
   "pacstall": {
     "version": "0.3.0",
