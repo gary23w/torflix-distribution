@@ -1,9 +1,9 @@
 {
   "_heartbeat": "2026-11",
   "homebrew": {
-    "version": "0.31.0",
-    "release": 426869368,
-    "updated": "2026-10-28T16:09:49.434Z",
+    "version": "0.31.1",
+    "release": 441623257,
+    "updated": "2026-11-11T23:39:21.570Z",
     "url": "https://github.com/gary23w/homebrew-torflix/blob/main/Casks/torflix.rb"
   },
   "scoop": {
